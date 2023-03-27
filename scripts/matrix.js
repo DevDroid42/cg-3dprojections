@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-redeclare
 class Matrix {
     constructor(r, c) {
         this.rows = r;
@@ -205,6 +206,7 @@ Matrix.multiply = function(matrices) {
 }
 
 
+// eslint-disable-next-line no-redeclare
 class Vector extends Matrix {
     constructor(n) {
         var i;

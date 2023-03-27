@@ -6,6 +6,7 @@ const FAR =    2;  // binary 000010
 const NEAR =   1;  // binary 000001
 const FLOAT_EPSILON = 0.000001;
 
+// eslint-disable-next-line no-redeclare
 class Renderer {
     // canvas:              object ({id: __, width: __, height: __})
     // scene:               object (...see description on Canvas)
@@ -58,7 +59,6 @@ class Renderer {
     //
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         console.log('draw()');
 
         // TODO: implement drawing here!
@@ -106,8 +106,8 @@ class Renderer {
         let result = null;
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-        let out0 = outcodePerspective(p0, z_min);
-        let out1 = outcodePerspective(p1, z_min);
+        let out0 = this.outcodePerspective(p0, z_min);
+        let out1 = this.outcodePerspective(p1, z_min);
         
         // TODO: implement clipping here!
         
@@ -171,6 +171,7 @@ class Renderer {
                                                 scene.models[i].vertices[j][1],
                                                 scene.models[i].vertices[j][2],
                                                 1));
+                    // eslint-disable-next-line no-prototype-builtins
                     if (scene.models[i].hasOwnProperty('animation')) {
                         model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
                     }
@@ -182,6 +183,7 @@ class Renderer {
                                        scene.models[i].center[2],
                                        1);
                 for (let key in scene.models[i]) {
+                    // eslint-disable-next-line no-prototype-builtins
                     if (scene.models[i].hasOwnProperty(key) && key !== 'type' && key != 'center') {
                         model[key] = JSON.parse(JSON.stringify(scene.models[i][key]));
                     }
@@ -210,4 +212,4 @@ class Renderer {
         this.ctx.fillRect(x0 - 2, y0 - 2, 4, 4);
         this.ctx.fillRect(x1 - 2, y1 - 2, 4, 4);
     }
-};
+}

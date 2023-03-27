@@ -1,0 +1,23 @@
+{
+  "name": "cg-3dprojections",
+  "version": "1.0.0",
+  "description": "3D Projections & Clipping starter code using the HTML5 Canvas 2D API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevDroid42/cg-3dprojections.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevDroid42/cg-3dprojections/issues"
+  },
+  "homepage": "https://github.com/DevDroid42/cg-3dprojections#readme",
+  "devDependencies": {
+    "eslint": "^8.36.0"
+  }
+}
