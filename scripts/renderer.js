@@ -6,7 +6,7 @@ const FAR =    2;  // binary 000010
 const NEAR =   1;  // binary 000001
 const FLOAT_EPSILON = 0.000001;
 
-// eslint-disable-next-line no-redeclare
+// eslint-disable-next-line no-redeclare, no-unused-vars
 class Renderer {
     // canvas:              object ({id: __, width: __, height: __})
     // scene:               object (...see description on Canvas)

@@ -1,8 +1,10 @@
+// eslint-disable-next-line no-undef
 const { createApp } = Vue;
 
 let app;
 
 // Initialization function - called when web page loads
+// eslint-disable-next-line no-unused-vars
 function init() {
     app = createApp({
         data() {
