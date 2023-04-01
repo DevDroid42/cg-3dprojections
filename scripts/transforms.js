@@ -7,7 +7,25 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
 
     // ...
-    let transform = Matrix.multiply();
+    let translate = new Matrix(4, 4);
+    mat4x4Translate(translate, -prp.x, -prp.y, -prp.z);
+    
+    let n = (prp.subtract(srp));
+    n.normalize();
+
+    let u = vup.cross(n)
+    u.normalize()
+
+    let v = n.cross(u)
+    
+    let rotate = new Matrix(4, 4)
+    rotate.values = [[u.x, u.y, u.z, 0],
+                     [v.x, v.y, v.z, 0],
+                     [n.x, n.y, n.z, 0],
+                     [0, 0, 0, 1]];
+
+    console.log(n);
+    let transform = Matrix.multiply( , rotate , translate);
     // return transform;
 }
 
@@ -80,8 +98,8 @@ function mat4x4RotateZ(mat4x4, theta) {
 
 // set values of existing 4x4 matrix to the shear parallel to the xy-plane matrix
 function mat4x4ShearXY(mat4x4, shx, shy) {
-    mat4x4.values = [[1, shx, 0, 0],
-                    [shy, 1, 0, 0],
+    mat4x4.values = [[1, 0, shx, 0],
+                    [0, 1, shy, 0],
                     [0, 0, 1, 0],
                     [0, 0, 0, 1]];
 }
