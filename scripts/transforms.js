@@ -24,8 +24,11 @@ function mat4x4Perspective(prp, srp, vup, clip) {
                      [n.x, n.y, n.z, 0],
                      [0, 0, 0, 1]];
 
+    let shear = new Matrix(4, 4)
+
+
     console.log(n);
-    let transform = Matrix.multiply( , rotate , translate);
+    let transform = Matrix.multiply(rotate , translate);
     // return transform;
 }
 
