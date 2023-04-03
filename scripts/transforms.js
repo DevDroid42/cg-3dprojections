@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-redeclare */
 // create a 4x4 matrix to the perspective projection / view matrix
 function mat4x4Perspective(prp, srp, vup, clip) {
@@ -13,44 +14,44 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let n = (prp.subtract(srp));
     n.normalize();
 
-    let u = vup.cross(n)
-    u.normalize()
+    let u = vup.cross(n);
+    u.normalize();
 
-    let v = n.cross(u)
+    let v = n.cross(u);
     
-    let rotateMatrix = new Matrix(4, 4)
+    let rotateMatrix = new Matrix(4, 4);
     rotateMatrix.values = [[u.x, u.y, u.z, 0],
                      [v.x, v.y, v.z, 0],
                      [n.x, n.y, n.z, 0],
                      [0, 0, 0, 1]];
 
-    let left = clip[0]
-    let right = clip[1]
-    let bottom = clip[2]
-    let top = clip[3]
-    let near = clip[4]
-    let far = clip[5]
+    let left = clip[0];
+    let right = clip[1];
+    let bottom = clip[2];
+    let top = clip[3];
+    let near = clip[4];
+    let far = clip[5];
 
     let CW = Vector3((left + right)/2, (bottom +  top) / 2, -near);
-    let DOP = CW.subtract(prp)
+    let DOP = CW.subtract(prp);
 
-    let shearX = -DOP.x/DOP.z
-    let shearY = -DOP.y/DOP.x
+    let shearX = -DOP.x/DOP.z;
+    let shearY = -DOP.y/DOP.x;
 
-    let shearMatrix = new Matrix(4, 4)
+    let shearMatrix = new Matrix(4, 4);
     shearMatrix.values = [[1, 0, shearX, 0],
                      [0, 1, shearY, 0],
                      [0, 0, 1, 0],
                      [0, 0, 0, 1]];
 
-    let sperx = (2 * near) / ((right-left) * far)
-    let spery = (2 * near) / ((top-bottom) * far)
-    let sperz = (1 / far)
-    let scaleMatrix = Matrix(4,4)
-    mat4x4Scale(scaleMatrix, sperx, spery, sperz)
+    let sperx = (2 * near) / ((right-left) * far);
+    let spery = (2 * near) / ((top-bottom) * far);
+    let sperz = (1 / far);
+    let scaleMatrix = new Matrix(4,4);
+    mat4x4Scale(scaleMatrix, sperx, spery, sperz);
 
     console.log(n);
-    let nper = Matrix.multiply(scaleMatrix, shearMatrix , rotateMatrix , translateMatrix);
+    let nper = Matrix.multiply([scaleMatrix, shearMatrix , rotateMatrix , translateMatrix]);
 
     //let mper = mat4x4MPer()
 

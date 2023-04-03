@@ -1,9 +1,9 @@
-const LEFT =   32; // binary 100000
-const RIGHT =  16; // binary 010000
+const LEFT = 32; // binary 100000
+const RIGHT = 16; // binary 010000
 const BOTTOM = 8;  // binary 001000
-const TOP =    4;  // binary 000100
-const FAR =    2;  // binary 000010
-const NEAR =   1;  // binary 000001
+const TOP = 4;  // binary 000100
+const FAR = 2;  // binary 000010
+const NEAR = 1;  // binary 000001
 const FLOAT_EPSILON = 0.000001;
 
 // eslint-disable-next-line no-redeclare, no-unused-vars
@@ -24,34 +24,33 @@ class Renderer {
     //
     updateTransforms(time, delta_time) {
         // TODO: update any transformations needed for animation
-        mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.clip);
     }
 
     //
     rotateLeft() {
 
     }
-    
+
     //
     rotateRight() {
 
     }
-    
+
     //
     moveLeft() {
 
     }
-    
+
     //
     moveRight() {
 
     }
-    
+
     //
     moveBackward() {
 
     }
-    
+
     //
     moveForward() {
 
@@ -62,6 +61,7 @@ class Renderer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         console.log('draw()');
         console.log(this.scene)
+
         // TODO: implement drawing here!
         // For each model
         //   * For each vertex
@@ -71,7 +71,32 @@ class Renderer {
         //     * project to 2D
         //     * translate/scale to viewport (i.e. window)
         //     * draw line
-        
+        let transform = mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
+        let clip = this.scene.view.clip;
+        let left = clip[0];
+        let right = clip[1];
+        let bottom = clip[2];
+        let top = clip[3];
+        let near = clip[4];
+        let far = clip[5];
+        for (let i = 0; i < this.scene.models.length; i++) {
+            let transformedVerticies = []
+            for (let j = 0; j < this.scene.models[i].vertices.length; j++) {
+                transformedVerticies.push(
+                    Matrix.multiply(
+                        [mat4x4Viewport(left, top),
+                        mat4x4MPer(),
+                        transform,
+                        this.scene.models[i].vertices[j]]
+                    )
+                );
+            }
+            for (let j = 0; j < this.scene.models[i].edges.length; j++) {
+                const edges = this.scene.models[i].edges[j]
+                this.drawLine(transformedVerticies[edges[0]], transformedVerticies[edges[1]]);
+            }
+
+        }
     }
 
     // Get outcode for a vertex
@@ -106,14 +131,14 @@ class Renderer {
     // z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
         let result = null;
-        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
+        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
         let out0 = this.outcodePerspective(p0, z_min);
         let out1 = this.outcodePerspective(p1, z_min);
-        
-        
+
+
         // TODO: implement clipping here!
-        
+
         return result;
     }
 
@@ -171,9 +196,9 @@ class Renderer {
                 model.edges = JSON.parse(JSON.stringify(scene.models[i].edges));
                 for (let j = 0; j < scene.models[i].vertices.length; j++) {
                     model.vertices.push(Vector4(scene.models[i].vertices[j][0],
-                                                scene.models[i].vertices[j][1],
-                                                scene.models[i].vertices[j][2],
-                                                1));
+                        scene.models[i].vertices[j][1],
+                        scene.models[i].vertices[j][2],
+                        1));
                     // eslint-disable-next-line no-prototype-builtins
                     if (scene.models[i].hasOwnProperty('animation')) {
                         model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
@@ -182,9 +207,9 @@ class Renderer {
             }
             else {
                 model.center = Vector4(scene.models[i].center[0],
-                                       scene.models[i].center[1],
-                                       scene.models[i].center[2],
-                                       1);
+                    scene.models[i].center[1],
+                    scene.models[i].center[2],
+                    1);
                 for (let key in scene.models[i]) {
                     // eslint-disable-next-line no-prototype-builtins
                     if (scene.models[i].hasOwnProperty(key) && key !== 'type' && key != 'center') {
@@ -199,7 +224,7 @@ class Renderer {
 
         return processed;
     }
-    
+
     // x0:           float (x coordinate of p0)
     // y0:           float (y coordinate of p0)
     // x1:           float (x coordinate of p1)
