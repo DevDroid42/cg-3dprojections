@@ -61,7 +61,7 @@ class Renderer {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         console.log('draw()');
-
+        console.log(this.scene)
         // TODO: implement drawing here!
         // For each model
         //   * For each vertex
@@ -71,6 +71,7 @@ class Renderer {
         //     * project to 2D
         //     * translate/scale to viewport (i.e. window)
         //     * draw line
+        
     }
 
     // Get outcode for a vertex
