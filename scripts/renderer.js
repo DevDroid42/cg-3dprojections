@@ -59,6 +59,7 @@ class Renderer {
     //
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        //this.drawLine(0, 0, 100, 100);
         console.log('draw()');
         console.log(this.scene)
 
@@ -80,11 +81,11 @@ class Renderer {
         let near = clip[4];
         let far = clip[5];
         for (let i = 0; i < this.scene.models.length; i++) {
-            let transformedVerticies = []
+            let transformedVerticies = Array(this.scene.models[i].vertices.length);
             for (let j = 0; j < this.scene.models[i].vertices.length; j++) {
-                transformedVerticies.push(
+                transformedVerticies[j] = (
                     Matrix.multiply(
-                        [mat4x4Viewport(left, top),
+                        [mat4x4Viewport(left * 2, top * 2),
                         mat4x4MPer(),
                         transform,
                         this.scene.models[i].vertices[j]]
@@ -93,7 +94,11 @@ class Renderer {
             }
             for (let j = 0; j < this.scene.models[i].edges.length; j++) {
                 const edges = this.scene.models[i].edges[j]
-                this.drawLine(transformedVerticies[edges[0]], transformedVerticies[edges[1]]);
+                let x1 = transformedVerticies[edges[0]].x;
+                let x2 = transformedVerticies[edges[1]].x;
+                let y1 = transformedVerticies[edges[0]].y;
+                let y2 = transformedVerticies[edges[1]].y;
+                this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
             }
 
         }
