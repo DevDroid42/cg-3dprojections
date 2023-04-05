@@ -81,19 +81,20 @@ class Renderer {
         let near = clip[4];
         let far = clip[5];
         for (let i = 0; i < this.scene.models.length; i++) {
-            let transformedVerticies = Array(this.scene.models[i].vertices.length);
-            for (let j = 0; j < this.scene.models[i].vertices.length; j++) {
+            const model = this.scene.models[i];
+            let transformedVerticies = Array(model.vertices.length);
+            for (let j = 0; j < model.vertices.length; j++) {
                 transformedVerticies[j] = (
                     Matrix.multiply(
                         [mat4x4Viewport(left * 2, top * 2),
                         mat4x4MPer(),
                         transform,
-                        this.scene.models[i].vertices[j]]
+                        model.vertices[j]]
                     )
                 );
             }
-            for (let j = 0; j < this.scene.models[i].edges.length; j++) {
-                const edges = this.scene.models[i].edges[j]
+            for (let j = 0; j < model.edges.length; j++) {
+                const edges = model.edges[j]
                 let x1 = transformedVerticies[edges[0]].x;
                 let x2 = transformedVerticies[edges[1]].x;
                 let y1 = transformedVerticies[edges[0]].y;
