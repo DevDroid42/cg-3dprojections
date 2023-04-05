@@ -86,7 +86,7 @@ class Renderer {
             for (let j = 0; j < model.vertices.length; j++) {
                 transformedVerticies[j] = (
                     Matrix.multiply(
-                        [mat4x4Viewport(left * 2, top * 2),
+                        [mat4x4Viewport(-150, 1200),
                         mat4x4MPer(),
                         transform,
                         model.vertices[j]]
