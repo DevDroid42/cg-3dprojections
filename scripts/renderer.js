@@ -95,11 +95,13 @@ class Renderer {
             }
             for (let j = 0; j < model.edges.length; j++) {
                 const edges = model.edges[j]
-                let x1 = transformedVerticies[edges[0]].x;
-                let x2 = transformedVerticies[edges[1]].x;
-                let y1 = transformedVerticies[edges[0]].y;
-                let y2 = transformedVerticies[edges[1]].y;
-                this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
+                for (let k = 0; k < edges.length-1; k++) {
+                    let x1 = transformedVerticies[edges[k]].x;
+                    let x2 = transformedVerticies[edges[k+1]].x;
+                    let y1 = transformedVerticies[edges[k]].y;
+                    let y2 = transformedVerticies[edges[k+1]].y;
+                    this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
+                }
             }
 
         }
