@@ -38,22 +38,34 @@ class Renderer {
 
     //
     moveLeft() {
-
+        this.scene.view.prp.x -= 1;
+        this.scene.view.srp.x -= 1;
+        this.draw();
+        //let translateMatrix = new Matrix(4,4);
+        //mat4x4Translate(translateMatrix, -1, 0, 0);
+        //this.scene.view.prp = Matrix.multiply([this.scene.view.prp, translateMatrix]);
+        //this.scene.view.srp = Matrix.multiply([this.scene.view.srp, translateMatrix]);
     }
 
     //
     moveRight() {
-
+        this.scene.view.prp.x += 1;
+        this.scene.view.srp.x += 1;
+        this.draw();
     }
 
     //
     moveBackward() {
-
+        this.scene.view.prp.z -= 1;
+        this.scene.view.srp.z -= 1;
+        this.draw();
     }
 
     //
     moveForward() {
-
+        this.scene.view.prp.z += 1;
+        this.scene.view.srp.z += 1;
+        this.draw();
     }
 
     //
@@ -86,7 +98,7 @@ class Renderer {
             for (let j = 0; j < model.vertices.length; j++) {
                 transformedVerticies[j] = (
                     Matrix.multiply(
-                        [mat4x4Viewport(-150, 1200),
+                        [mat4x4Viewport(this.canvas.width, this.canvas.height),
                         mat4x4MPer(),
                         transform,
                         model.vertices[j]]
@@ -96,10 +108,10 @@ class Renderer {
             for (let j = 0; j < model.edges.length; j++) {
                 const edges = model.edges[j]
                 for (let k = 0; k < edges.length-1; k++) {
-                    let x1 = transformedVerticies[edges[k]].x;
-                    let x2 = transformedVerticies[edges[k+1]].x;
-                    let y1 = transformedVerticies[edges[k]].y;
-                    let y2 = transformedVerticies[edges[k+1]].y;
+                    let x1 = transformedVerticies[edges[k]].x / transformedVerticies[edges[k]].w;
+                    let x2 = transformedVerticies[edges[k+1]].x / transformedVerticies[edges[k+1]].w;
+                    let y1 = transformedVerticies[edges[k]].y / transformedVerticies[edges[k]].w;
+                    let y2 = transformedVerticies[edges[k+1]].y / transformedVerticies[edges[k+1]].w;
                     this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
                 }
             }

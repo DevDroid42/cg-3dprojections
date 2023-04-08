@@ -21,9 +21,9 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     
     let rotateMatrix = new Matrix(4, 4);
     rotateMatrix.values = [[u.x, u.y, u.z, 0],
-                     [v.x, v.y, v.z, 0],
-                     [n.x, n.y, n.z, 0],
-                     [0, 0, 0, 1]];
+                            [v.x, v.y, v.z, 0],
+                            [n.x, n.y, n.z, 0],
+                            [0, 0, 0, 1]];
 
     let left = clip[0];
     let right = clip[1];
@@ -33,7 +33,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let far = clip[5];
 
     let CW = Vector3((left + right)/2, (bottom +  top) / 2, -near);
-    let DOP = CW.subtract(prp);
+    let DOP = CW.subtract(Vector3(0,0,0));
 
     let shearX = -DOP.x/DOP.z;
     let shearY = -DOP.y/DOP.x;
