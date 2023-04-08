@@ -26,10 +26,7 @@ class Renderer {
         let srp = this.scene.view.srp;
         let vup = this.scene.view.vup;
         let translateMatrix = new Matrix(4, 4);
-        translateMatrix.values = [[1, 0, 0, -prp.x],
-                                [0, 1, 0, -prp.y],
-                                [0, 0, 1, -prp.z],
-                                [0, 0, 0, 1]];
+        mat4x4Translate(translateMatrix, -prp.x, -prp.y, -prp.z);
         point = Vector4(point.x, point.y, point.z, 1);
         let VRCRotateMatrix = VRCmatrix(prp, srp, vup).inverse();
         let vec4Point = Matrix.multiply([VRCRotateMatrix, translateMatrix, point]);
@@ -41,10 +38,7 @@ class Renderer {
         let srp = this.scene.view.srp;
         let vup = this.scene.view.vup;
         let translateMatrix = new Matrix(4, 4);
-        translateMatrix.values = [[1, 0, 0, prp.x],
-                                [0, 1, 0, prp.y],
-                                [0, 0, 1, prp.z],
-                                [0, 0, 0, 1]];
+        mat4x4Translate(translateMatrix, prp.x, prp.y, prp.z);
         point = Vector4(point.x, point.y, point.z, 1);
         let VRCRotateMatrix = VRCmatrix(prp, srp, vup);
         let vec4Point = Matrix.multiply([translateMatrix, VRCRotateMatrix, point]);
@@ -56,34 +50,48 @@ class Renderer {
         // TODO: update any transformations needed for animation
     }
 
+    
     //
     rotateLeft() {
-
+        let local = this.worldToLocal(this.scene.view.srp);
+        let rotateMatrix = new Matrix(4, 4);
+        mat4x4RotateY(rotateMatrix, -0.1);
+        let point = Vector4(local.x, local.y, local.z, 1);
+        point = Matrix.multiply([rotateMatrix, point]);
+        let newSRP = this.localToWorld(point);
+        this.scene.view.srp = newSRP;
+        this.draw();
     }
 
     //
     rotateRight() {
+        let local = this.worldToLocal(this.scene.view.srp);
+        let rotateMatrix = new Matrix(4, 4);
+        mat4x4RotateY(rotateMatrix, 0.1);
+        let point = Vector4(local.x, local.y, local.z, 1);
+        point = Matrix.multiply([rotateMatrix, point]);
+        let newSRP = this.localToWorld(point);
+        this.scene.view.srp = newSRP;
 
+        console.log("test")
+        console.log(this.worldToLocal(this.scene.view.srp));
+
+        this.draw();
+    }
+
+    logVector(){
+        print()
     }
 
     //
     moveLeft() {
 
-        /*
-        console.log(this.localToWorld(new Vector3(0,0,0)));
-        console.log("should equal:");
-        console.log(this.scene.view.prp);
-        */
-        
-        console.log("test")
-        console.log(this.worldToLocal(this.scene.view.srp));
-
         let local = this.worldToLocal(this.scene.view.prp);
-        local.z -= 1;
+        local.z += 1;
         let newPRP = this.localToWorld(local);
 
         local = this.worldToLocal(this.scene.view.srp);
-        local.z -= 1;
+        local.z += 1;
         let newSRP = this.localToWorld(local);
 
         this.scene.view.prp = newPRP;
@@ -94,11 +102,11 @@ class Renderer {
     //
     moveRight() {
         let local = this.worldToLocal(this.scene.view.prp);
-        local.z += 1;
+        local.z -= 1;
         let newPRP = this.localToWorld(local);
 
         local = this.worldToLocal(this.scene.view.srp);
-        local.z += 1;
+        local.z -= 1;
         let newSRP = this.localToWorld(local);
 
         this.scene.view.prp = newPRP;
