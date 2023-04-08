@@ -29,6 +29,6 @@ module.exports = {
         "mat4x4RotateY": true,
         "mat4x4RotateZ": true,
         "mat4x4ShearXY": true,
-
+        "VRCmatrix": true
     }
 }

@@ -21,6 +21,36 @@ class Renderer {
         this.prev_time = null;
     }
 
+    worldToLocal(point){
+        let prp = this.scene.view.prp;
+        let srp = this.scene.view.srp;
+        let vup = this.scene.view.vup;
+        let translateMatrix = new Matrix(4, 4);
+        translateMatrix.values = [[1, 0, 0, -prp.x],
+                                [0, 1, 0, -prp.y],
+                                [0, 0, 1, -prp.z],
+                                [0, 0, 0, 1]];
+        point = Vector4(point.x, point.y, point.z, 1);
+        let VRCRotateMatrix = VRCmatrix(prp, srp, vup).inverse();
+        let vec4Point = Matrix.multiply([VRCRotateMatrix, translateMatrix, point]);
+        return new Vector3(vec4Point.x, vec4Point.y, vec4Point.z);
+    }
+    
+    localToWorld(point){
+        let prp = this.scene.view.prp;
+        let srp = this.scene.view.srp;
+        let vup = this.scene.view.vup;
+        let translateMatrix = new Matrix(4, 4);
+        translateMatrix.values = [[1, 0, 0, prp.x],
+                                [0, 1, 0, prp.y],
+                                [0, 0, 1, prp.z],
+                                [0, 0, 0, 1]];
+        point = Vector4(point.x, point.y, point.z, 1);
+        let VRCRotateMatrix = VRCmatrix(prp, srp, vup);
+        let vec4Point = Matrix.multiply([translateMatrix, VRCRotateMatrix, point]);
+        return new Vector3(vec4Point.x, vec4Point.y, vec4Point.z);
+    }
+
     //
     updateTransforms(time, delta_time) {
         // TODO: update any transformations needed for animation
@@ -38,33 +68,71 @@ class Renderer {
 
     //
     moveLeft() {
-        this.scene.view.prp.x -= 1;
-        this.scene.view.srp.x -= 1;
+
+        /*
+        console.log(this.localToWorld(new Vector3(0,0,0)));
+        console.log("should equal:");
+        console.log(this.scene.view.prp);
+        */
+        
+        console.log("test")
+        console.log(this.worldToLocal(this.scene.view.srp));
+
+        let local = this.worldToLocal(this.scene.view.prp);
+        local.z -= 1;
+        let newPRP = this.localToWorld(local);
+
+        local = this.worldToLocal(this.scene.view.srp);
+        local.z -= 1;
+        let newSRP = this.localToWorld(local);
+
+        this.scene.view.prp = newPRP;
+        this.scene.view.srp = newSRP;
         this.draw();
-        //let translateMatrix = new Matrix(4,4);
-        //mat4x4Translate(translateMatrix, -1, 0, 0);
-        //this.scene.view.prp = Matrix.multiply([this.scene.view.prp, translateMatrix]);
-        //this.scene.view.srp = Matrix.multiply([this.scene.view.srp, translateMatrix]);
     }
 
     //
     moveRight() {
-        this.scene.view.prp.x += 1;
-        this.scene.view.srp.x += 1;
+        let local = this.worldToLocal(this.scene.view.prp);
+        local.z += 1;
+        let newPRP = this.localToWorld(local);
+
+        local = this.worldToLocal(this.scene.view.srp);
+        local.z += 1;
+        let newSRP = this.localToWorld(local);
+
+        this.scene.view.prp = newPRP;
+        this.scene.view.srp = newSRP;
         this.draw();
     }
 
     //
     moveBackward() {
-        this.scene.view.prp.z -= 1;
-        this.scene.view.srp.z -= 1;
+        let local = this.worldToLocal(this.scene.view.prp);
+        local.x += 1;
+        let newPRP = this.localToWorld(local);
+
+        local = this.worldToLocal(this.scene.view.srp);
+        local.x += 1;
+        let newSRP = this.localToWorld(local);
+
+        this.scene.view.prp = newPRP;
+        this.scene.view.srp = newSRP;
         this.draw();
     }
 
     //
     moveForward() {
-        this.scene.view.prp.z += 1;
-        this.scene.view.srp.z += 1;
+        let local = this.worldToLocal(this.scene.view.prp);
+        local.x -= 1;
+        let newPRP = this.localToWorld(local);
+
+        local = this.worldToLocal(this.scene.view.srp);
+        local.x -= 1;
+        let newSRP = this.localToWorld(local);
+
+        this.scene.view.prp = newPRP;
+        this.scene.view.srp = newSRP;
         this.draw();
     }
 

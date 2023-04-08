@@ -11,19 +11,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let translateMatrix = new Matrix(4, 4);
     mat4x4Translate(translateMatrix, -prp.x, -prp.y, -prp.z);
     
-    let n = (prp.subtract(srp));
-    n.normalize();
-
-    let u = vup.cross(n);
-    u.normalize();
-
-    let v = n.cross(u);
-    
-    let rotateMatrix = new Matrix(4, 4);
-    rotateMatrix.values = [[u.x, u.y, u.z, 0],
-                            [v.x, v.y, v.z, 0],
-                            [n.x, n.y, n.z, 0],
-                            [0, 0, 0, 1]];
+    let rotateMatrix = VRCmatrix(prp, srp, vup);
 
     let left = clip[0];
     let right = clip[1];
@@ -33,7 +21,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let far = clip[5];
 
     let CW = Vector3((left + right)/2, (bottom +  top) / 2, -near);
-    let DOP = CW.subtract(Vector3(0,0,0));
+    let DOP = CW;
 
     let shearX = -DOP.x/DOP.z;
     let shearY = -DOP.y/DOP.x;
@@ -49,8 +37,6 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let sperz = (1 / far);
     let scaleMatrix = new Matrix(4,4);
     mat4x4Scale(scaleMatrix, sperx, spery, sperz);
-
-    console.log(n);
     let nper = Matrix.multiply([scaleMatrix, shearMatrix , rotateMatrix , translateMatrix]);
 
     //let mper = mat4x4MPer()
@@ -58,6 +44,24 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     //let transform = Matrix.multiply(mper, nper)
     
     return nper;
+}
+
+function VRCmatrix(prp, srp, vup){
+    let n = (prp.subtract(srp));
+    n.normalize();
+
+    let u = vup.cross(n);
+    u.normalize();
+
+    let v = n.cross(u);
+    v.normalize();
+    
+    let rotateMatrix = new Matrix(4, 4);
+    rotateMatrix.values = [[u.x, u.y, u.z, 0],
+                            [v.x, v.y, v.z, 0],
+                            [n.x, n.y, n.z, 0],
+                            [0, 0, 0, 1]];
+    return rotateMatrix;
 }
 
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
