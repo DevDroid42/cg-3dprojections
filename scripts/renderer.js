@@ -21,7 +21,7 @@ class Renderer {
         this.prev_time = null;
     }
 
-    worldToLocal(point){
+    worldToLocal(point) {
         let prp = this.scene.view.prp;
         let srp = this.scene.view.srp;
         let vup = this.scene.view.vup;
@@ -32,8 +32,8 @@ class Renderer {
         let vec4Point = Matrix.multiply([VRCRotateMatrix, translateMatrix, point]);
         return new Vector3(vec4Point.x, vec4Point.y, vec4Point.z);
     }
-    
-    localToWorld(point){
+
+    localToWorld(point) {
         let prp = this.scene.view.prp;
         let srp = this.scene.view.srp;
         let vup = this.scene.view.vup;
@@ -50,7 +50,7 @@ class Renderer {
         // TODO: update any transformations needed for animation
     }
 
-    
+
     //
     rotateLeft() {
         let local = this.worldToLocal(this.scene.view.srp);
@@ -81,7 +81,7 @@ class Renderer {
         this.draw();
     }
 
-    logVector(){
+    logVector() {
         print()
     }
 
@@ -178,20 +178,23 @@ class Renderer {
             for (let j = 0; j < model.vertices.length; j++) {
                 transformedVerticies[j] = (
                     Matrix.multiply(
-                        [mat4x4Viewport(this.canvas.width, this.canvas.height),
-                        mat4x4MPer(),
-                        transform,
+                        [mat4x4MPer(),
+                            transform,
                         model.vertices[j]]
                     )
                 );
             }
+            this.clipTransformedLines(model, transformedVerticies);
+            for (let j = 0; j < transformedVerticies.length; j++) {
+                transformedVerticies[j] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), transformedVerticies[j]]);
+            }
             for (let j = 0; j < model.edges.length; j++) {
                 const edges = model.edges[j]
-                for (let k = 0; k < edges.length-1; k++) {
+                for (let k = 0; k < edges.length - 1; k++) {
                     let x1 = transformedVerticies[edges[k]].x / transformedVerticies[edges[k]].w;
-                    let x2 = transformedVerticies[edges[k+1]].x / transformedVerticies[edges[k+1]].w;
+                    let x2 = transformedVerticies[edges[k + 1]].x / transformedVerticies[edges[k + 1]].w;
                     let y1 = transformedVerticies[edges[k]].y / transformedVerticies[edges[k]].w;
-                    let y2 = transformedVerticies[edges[k+1]].y / transformedVerticies[edges[k+1]].w;
+                    let y2 = transformedVerticies[edges[k + 1]].y / transformedVerticies[edges[k + 1]].w;
                     this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
                 }
             }
@@ -225,6 +228,20 @@ class Renderer {
         return outcode;
     }
 
+    clipTransformedLines(model, transformedVerticies) {
+        for (let i = 0; i < transformedVerticies.length; i++) {
+            for (let j = 0; j < model.edges.length; j++) {
+                const edges = model.edges[j]
+                for (let k = 0; k < edges.length - 1; k++) {
+                    let vertex1 = transformedVerticies[edges[k]];
+                    let vertex2 = transformedVerticies[edges[k+1]];
+                    this.clipLinePerspective({pt0: vertex1, pt1: vertex2}, 0);
+                    //transformedVerticies[i] = this.clipLinePerspective({pt0: vertex1, pt1: vertex2}, this.scene.view.clip.z_min);
+                }
+            }
+        }
+    }
+
     // Clip line - should either return a new line (with two endpoints inside view volume)
     //             or null (if line is completely outside view volume)
     // line:         object {pt0: Vector4, pt1: Vector4}
@@ -233,9 +250,12 @@ class Renderer {
         let result = null;
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
+        let delta = p1.subtract(p0);
+        
         let out0 = this.outcodePerspective(p0, z_min);
         let out1 = this.outcodePerspective(p1, z_min);
-
+        console.log(out0.toString(2));
+        console.log(out1.toString(2));
 
         // TODO: implement clipping here!
 
