@@ -199,8 +199,8 @@ class Renderer {
                 ]);
                 this.drawLine(
                     parseInt(pt0.x / pt0.w),
-                    parseInt(pt1.y / pt1.w),
-                    parseInt(pt0.x / pt0.w),
+                    parseInt(pt0.y / pt0.w),
+                    parseInt(pt1.x / pt1.w),
                     parseInt(pt1.y / pt1.w)
                 );
             });
@@ -258,14 +258,14 @@ class Renderer {
                     vertex1 = new Vector4(vertex1.x, vertex1.y, vertex1.z, vertex1.w);
                     let vertex2 = transformedVerticies[edges[k + 1]];
                     vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
-                    let result = { pt0: vertex1, pt1: vertex2 };
-                    //let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, 0);
+                    //let result = { pt0: vertex1, pt1: vertex2 };
+                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2}, 0);
                     if(result == null){
                         continue;
                     }
                     //transformedVerticies[edges[k]] = result.pt0;
                     //transformedVerticies[edges[k + 1]] = result.pt1;
-                    //result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, 0);
+                    result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, 0);
                     //transformedVerticies[edges[k]] = result.pt1;
                     //transformedVerticies[edges[k + 1]] = result.pt0;
                     if(result != null){
