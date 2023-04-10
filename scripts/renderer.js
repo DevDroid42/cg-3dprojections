@@ -251,12 +251,45 @@ class Renderer {
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
         let delta = p1.subtract(p0);
+<<<<<<< HEAD
+        let out0 = this.outcodePerspective(p0, z_min);
+        let out1 = this.outcodePerspective(p1, z_min);
+
+        //left
+        //let t = (-p0.x + p0.z)/(delta.x - delta.z);
+        //let x = p0.x + (t * delta.x);
+
+        //right
+        //let t = (-p0.x + p0.z)/(-delta.x - delta.z);
+        //let x = p0.x + (t * delta.x);
+
+        //bottom
+        //let t = (-p0.y + p0.z)/(delta.y - delta.z)
+        //let y = p0.y + (t * delta.y);
+
+        //top
+        //let t = (p0.y + p0.z)/(-delta.y - delta.z)
+        //let y = p0.y + (t * delta.y);
+
+        //near
+        //let t = (p0.z - z_min)/-delta.z
+        //let z = p0.z + (t * delta.z);
+
+        //far
+        //let t = (-p0.z - 1)/delta.z
+        //let z = p0.z + (t * delta.z);
+
+
+
+
+=======
         
         let out0 = this.outcodePerspective(p0, z_min);
         let out1 = this.outcodePerspective(p1, z_min);
         console.log(this.getOutcodeArray(out0));
         console.log(out0.toString(2));
         console.log(out1.toString(2));
+>>>>>>> 2b8ceaba0d8b3ad1aec2e44fa4581b6e036e44a0
 
         // TODO: implement clipping here!
 
