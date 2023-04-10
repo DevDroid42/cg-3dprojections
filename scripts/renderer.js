@@ -259,13 +259,13 @@ class Renderer {
                     let vertex2 = transformedVerticies[edges[k + 1]];
                     vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
                     //let result = { pt0: vertex1, pt1: vertex2 };
-                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2}, 0);
+                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2}, this.scene.view.clip[4]);
                     if(result == null){
                         continue;
                     }
                     //transformedVerticies[edges[k]] = result.pt0;
                     //transformedVerticies[edges[k + 1]] = result.pt1;
-                    result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, 0);
+                    //result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, this.scene.view.clip[4]);
                     //transformedVerticies[edges[k]] = result.pt1;
                     //transformedVerticies[edges[k + 1]] = result.pt0;
                     if(result != null){
@@ -283,8 +283,8 @@ class Renderer {
     // z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
         let result = { pt0: null, pt1: null };
-        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
-        let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
+        let p0 = Vector4(line.pt0.x, line.pt0.y, line.pt0.z, 1);
+        let p1 = Vector4(line.pt1.x, line.pt1.y, line.pt1.z, 1);
         let delta = p1.subtract(p0);
         let rawOutcode0 = this.outcodePerspective(p0, z_min);
         let rawOutcode1 = this.outcodePerspective(p1, z_min);
@@ -304,42 +304,42 @@ class Renderer {
             return null;
         }
 
-        if (out0.left || out1.left) {
+        if (out0.left) {
             //left
             let t = (-p0.x + p0.z) / (delta.x - delta.z);
             let x = p0.x + (t * delta.x);
             p0.x = x;
         }
 
-        if (out0.right || out1.right) {
+        if (out0.right) {
             //right
-            let t = (-p0.x + p0.z) / (-delta.x - delta.z);
+            let t = (p0.x + p0.z) / (-delta.x - delta.z);
             let x = p0.x + (t * delta.x);
             p0.x = x;
         }
 
-        if (out0.bottom || out1.bottom) {
+        if (out0.bottom) {
             //bottom
             let t = (-p0.y + p0.z) / (delta.y - delta.z)
             let y = p0.y + (t * delta.y);
             p0.y = y;
         }
 
-        if (out0.top || out1.top) {
+        if (out0.top) {
             //top
             let t = (p0.y + p0.z) / (-delta.y - delta.z)
             let y = p0.y + (t * delta.y);
             p0.y = y;
         }
 
-        if (out0.near || out1.near) {
+        if (out0.near) {
             //near
             let t = (p0.z - z_min) / -delta.z
             let z = p0.z + (t * delta.z);
             p0.z = z;
         }
 
-        if (out0.far || out1.far) {
+        if (out0.far) {
             //far
             let t = (-p0.z - 1) / delta.z
             let z = p0.z + (t * delta.z);
@@ -364,8 +364,8 @@ class Renderer {
             right: outcodes[1],
             bottom: outcodes[2],
             top: outcodes[3],
-            near: outcodes[4],
-            far: outcodes[5],
+            near: outcodes[5],
+            far: outcodes[4],
         };
         return outcodeObj;
     }
