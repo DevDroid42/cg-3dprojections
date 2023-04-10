@@ -260,15 +260,12 @@ class Renderer {
                     vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
                     //let result = { pt0: vertex1, pt1: vertex2 };
                     let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2}, this.scene.view.clip[4]);
-                    if(result == null){
-                        continue;
-                    }
                     //transformedVerticies[edges[k]] = result.pt0;
                     //transformedVerticies[edges[k + 1]] = result.pt1;
                     //result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, this.scene.view.clip[4]);
                     //transformedVerticies[edges[k]] = result.pt1;
                     //transformedVerticies[edges[k + 1]] = result.pt0;
-                    if(result != null){
+                    if (result != null){
                         clippedEdges.push(result);
                     }
                 }
@@ -364,8 +361,9 @@ class Renderer {
             right: outcodes[1],
             bottom: outcodes[2],
             top: outcodes[3],
-            near: outcodes[5],
             far: outcodes[4],
+            near: outcodes[5],
+            
         };
         return outcodeObj;
     }
