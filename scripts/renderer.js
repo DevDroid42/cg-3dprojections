@@ -178,15 +178,16 @@ class Renderer {
             for (let j = 0; j < model.vertices.length; j++) {
                 transformedVerticies[j] = (
                     Matrix.multiply(
-                        [mat4x4MPer(),
+                        [
                             transform,
-                        model.vertices[j]]
+                            model.vertices[j]
+                        ]
                     )
                 );
             }
             this.clipTransformedLines(model, transformedVerticies);
             for (let j = 0; j < transformedVerticies.length; j++) {
-                transformedVerticies[j] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), transformedVerticies[j]]);
+                transformedVerticies[j] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height),   mat4x4MPer(), transformedVerticies[j]]);
             }
             for (let j = 0; j < model.edges.length; j++) {
                 const edges = model.edges[j]
@@ -234,9 +235,13 @@ class Renderer {
                 const edges = model.edges[j]
                 for (let k = 0; k < edges.length - 1; k++) {
                     let vertex1 = transformedVerticies[edges[k]];
-                    let vertex2 = transformedVerticies[edges[k+1]];
-                    this.clipLinePerspective({pt0: vertex1, pt1: vertex2}, 0);
-                    //transformedVerticies[i] = this.clipLinePerspective({pt0: vertex1, pt1: vertex2}, this.scene.view.clip.z_min);
+                    let vertex2 = transformedVerticies[edges[k + 1]];
+                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, 0.1);
+                    transformedVerticies[edges[k]] = result.pt0;
+                    transformedVerticies[edges[k + 1]] = result.pt1;
+                    result = this.clipLinePerspective({ pt0: vertex2, pt1: vertex1 }, 0.1);
+                    transformedVerticies[edges[k]] = result.pt1;
+                    transformedVerticies[edges[k + 1]] = result.pt0;
                 }
             }
         }
@@ -247,49 +252,84 @@ class Renderer {
     // line:         object {pt0: Vector4, pt1: Vector4}
     // z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
-        let result = null;
+        let result = { pt0: null, pt1: null };
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
         let delta = p1.subtract(p0);
-        let out0 = this.outcodePerspective(p0, z_min);
-        let out1 = this.outcodePerspective(p1, z_min);
+        let rawOutcode0 = this.outcodePerspective(p0, z_min);
+        let rawOutcode1 = this.outcodePerspective(p1, z_min)
 
-        //left
-        //let t = (-p0.x + p0.z)/(delta.x - delta.z);
-        //let x = p0.x + (t * delta.x);
+        let out0 = this.getOutcodeArray(rawOutcode0);
+        let out1 = this.getOutcodeArray(rawOutcode1);
+        //console.log(out0);
+        //console.log(out1);
 
-        //right
-        //let t = (-p0.x + p0.z)/(-delta.x - delta.z);
-        //let x = p0.x + (t * delta.x);
+        if ((rawOutcode0 | rawOutcode1) === 0) {
+            result.pt0 = new Vector4(p0.x, p0.y, p0.z, 1);
+            result.pt1 = new Vector4(p1.x, p1.y, p1.z, 1);
+            return result;
+        }
 
-        //bottom
-        //let t = (-p0.y + p0.z)/(delta.y - delta.z)
-        //let y = p0.y + (t * delta.y);
+        if ((rawOutcode0 & rawOutcode1) !== 0) {
+            result.pt0 = new Vector4(0, 0, 0, 1);
+            result.pt1 = new Vector4(0, 0, 0, 1);
+            return result;
+        }
 
-        //top
-        //let t = (p0.y + p0.z)/(-delta.y - delta.z)
-        //let y = p0.y + (t * delta.y);
 
-        //near
-        //let t = (p0.z - z_min)/-delta.z
-        //let z = p0.z + (t * delta.z);
 
-        //far
-        //let t = (-p0.z - 1)/delta.z
-        //let z = p0.z + (t * delta.z);
+        if (out0.left || out1.left) {
+            //left
+            let t = (-p0.x + p0.z) / (delta.x - delta.z);
+            let x = p0.x + (t * delta.x);
+            p0.x = x;
+        }
 
-        console.log(this.getOutcodeArray(out0));
-        console.log(out0.toString(2));
-        console.log(out1.toString(2));
+        if (out0.right || out1.right) {
+            //right
+            let t = (-p0.x + p0.z) / (-delta.x - delta.z);
+            let x = p0.x + (t * delta.x);
+            p0.x = x;
+        }
+
+        if (out0.bottom || out1.bottom) {
+            //bottom
+            let t = (-p0.y + p0.z) / (delta.y - delta.z)
+            let y = p0.y + (t * delta.y);
+            p0.y = y;
+        }
+
+        if (out0.top || out1.top) {
+            //top
+            let t = (p0.y + p0.z) / (-delta.y - delta.z)
+            let y = p0.y + (t * delta.y);
+            p0.y = y;
+        }
+
+        if (out0.near || out1.near) {
+            //near
+            let t = (p0.z - z_min) / -delta.z
+            let z = p0.z + (t * delta.z);
+            p0.z = z;
+        }
+
+        if (out0.far || out1.far) {
+            //far
+            let t = (-p0.z - 1) / delta.z
+            let z = p0.z + (t * delta.z);
+            p0.z = z;
+        }
+
 
         // TODO: implement clipping here!
-
+        result.pt0 = new Vector4(p0.x, p0.y, p0.z, 1);
+        result.pt1 = new Vector4(p1.x, p1.y, p1.z, 1);
         return result;
     }
 
-    getOutcodeArray(outcode){
-        for(outcode = outcode.toString(2); outcode.length < 6; outcode = "0" + outcode);
-        let outcodes = new Array[6];
+    getOutcodeArray(outcode) {
+        for (outcode = outcode.toString(2); outcode.length < 6; outcode = "0" + outcode);
+        let outcodes = Array(6);
         for (let i = 0; i < 6; i++) {
             outcodes[i] = outcode[i] == "1" ? true : false;
         }
@@ -301,6 +341,7 @@ class Renderer {
             near: outcodes[4],
             far: outcodes[5],
         };
+        return outcodeObj;
     }
 
     //
