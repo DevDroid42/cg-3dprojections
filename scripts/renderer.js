@@ -185,7 +185,26 @@ class Renderer {
                     )
                 );
             }
-            this.clipTransformedLines(model, transformedVerticies);
+            let clippedEdges = this.clipTransformedLines(model, transformedVerticies);
+            clippedEdges.forEach(edge => {
+                let pt0 = Matrix.multiply([
+                    mat4x4Viewport(this.canvas.width, this.canvas.height),
+                    mat4x4MPer(),
+                    edge.pt0
+                ]);
+                let pt1 = Matrix.multiply([
+                    mat4x4Viewport(this.canvas.width, this.canvas.height),
+                    mat4x4MPer(),
+                    edge.pt1
+                ]);
+                this.drawLine(
+                    parseInt(pt0.x / pt0.w),
+                    parseInt(pt1.y / pt1.w),
+                    parseInt(pt0.x / pt0.w),
+                    parseInt(pt1.y / pt1.w)
+                );
+            });
+            /*
             for (let j = 0; j < transformedVerticies.length; j++) {
                 transformedVerticies[j] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height),   mat4x4MPer(), transformedVerticies[j]]);
             }
@@ -199,7 +218,7 @@ class Renderer {
                     this.drawLine(parseInt(x1), parseInt(y1), parseInt(x2), parseInt(y2));
                 }
             }
-
+            */
         }
     }
 
@@ -230,21 +249,32 @@ class Renderer {
     }
 
     clipTransformedLines(model, transformedVerticies) {
+        let clippedEdges = []
         for (let i = 0; i < transformedVerticies.length; i++) {
             for (let j = 0; j < model.edges.length; j++) {
                 const edges = model.edges[j]
                 for (let k = 0; k < edges.length - 1; k++) {
                     let vertex1 = transformedVerticies[edges[k]];
+                    vertex1 = new Vector4(vertex1.x, vertex1.y, vertex1.z, vertex1.w);
                     let vertex2 = transformedVerticies[edges[k + 1]];
-                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, 0.1);
-                    transformedVerticies[edges[k]] = result.pt0;
-                    transformedVerticies[edges[k + 1]] = result.pt1;
-                    result = this.clipLinePerspective({ pt0: vertex2, pt1: vertex1 }, 0.1);
-                    transformedVerticies[edges[k]] = result.pt1;
-                    transformedVerticies[edges[k + 1]] = result.pt0;
+                    vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
+                    let result = { pt0: vertex1, pt1: vertex2 };
+                    //let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, 0);
+                    if(result == null){
+                        continue;
+                    }
+                    //transformedVerticies[edges[k]] = result.pt0;
+                    //transformedVerticies[edges[k + 1]] = result.pt1;
+                    //result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, 0);
+                    //transformedVerticies[edges[k]] = result.pt1;
+                    //transformedVerticies[edges[k + 1]] = result.pt0;
+                    if(result != null){
+                        clippedEdges.push(result);
+                    }
                 }
             }
         }
+        return clippedEdges;
     }
 
     // Clip line - should either return a new line (with two endpoints inside view volume)
@@ -257,7 +287,7 @@ class Renderer {
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
         let delta = p1.subtract(p0);
         let rawOutcode0 = this.outcodePerspective(p0, z_min);
-        let rawOutcode1 = this.outcodePerspective(p1, z_min)
+        let rawOutcode1 = this.outcodePerspective(p1, z_min);
 
         let out0 = this.getOutcodeArray(rawOutcode0);
         let out1 = this.getOutcodeArray(rawOutcode1);
@@ -271,12 +301,8 @@ class Renderer {
         }
 
         if ((rawOutcode0 & rawOutcode1) !== 0) {
-            result.pt0 = new Vector4(0, 0, 0, 1);
-            result.pt1 = new Vector4(0, 0, 0, 1);
-            return result;
+            return null;
         }
-
-
 
         if (out0.left || out1.left) {
             //left
