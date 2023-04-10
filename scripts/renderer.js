@@ -58,6 +58,7 @@ class Renderer {
         mat4x4RotateY(rotateMatrix, -0.1);
         let point = Vector4(local.x, local.y, local.z, 1);
         point = Matrix.multiply([rotateMatrix, point]);
+        point = new Vector3(point.x, point.y, point.z);
         let newSRP = this.localToWorld(point);
         this.scene.view.srp = newSRP;
         this.draw();
@@ -70,6 +71,7 @@ class Renderer {
         mat4x4RotateY(rotateMatrix, 0.1);
         let point = Vector4(local.x, local.y, local.z, 1);
         point = Matrix.multiply([rotateMatrix, point]);
+        point = new Vector3(point.x, point.y, point.z);
         let newSRP = this.localToWorld(point);
         this.scene.view.srp = newSRP;
 
@@ -146,6 +148,8 @@ class Renderer {
 
     //
     draw() {
+        console.log(this.worldToLocal(this.localToWorld((this.worldToLocal(this.scene.view.srp)))))
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         //this.drawLine(0, 0, 100, 100);
         console.log('draw()');

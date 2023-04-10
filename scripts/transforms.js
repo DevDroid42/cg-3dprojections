@@ -123,9 +123,9 @@ function mat4x4RotateX(mat4x4, theta) {
 
 // set values of existing 4x4 matrix to the rotate about y-axis matrix
 function mat4x4RotateY(mat4x4, theta) {
-    mat4x4.values = [[Math.cos(theta), 0, Math.sin(theta), 0],
+    mat4x4.values = [[Math.cos(theta), 0, -Math.sin(theta), 0],
                     [0, 1, 0, 0],
-                    [-Math.sin(theta), 0, Math.cos(theta), 0],
+                    [Math.sin(theta), 0, Math.cos(theta), 0],
                     [0, 0, 0, 1]];
 }
 
