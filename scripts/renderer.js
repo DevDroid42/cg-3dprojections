@@ -254,12 +254,29 @@ class Renderer {
         
         let out0 = this.outcodePerspective(p0, z_min);
         let out1 = this.outcodePerspective(p1, z_min);
+        console.log(this.getOutcodeArray(out0));
         console.log(out0.toString(2));
         console.log(out1.toString(2));
 
         // TODO: implement clipping here!
 
         return result;
+    }
+
+    getOutcodeArray(outcode){
+        for(outcode = outcode.toString(2); outcode.length < 6; outcode = "0" + outcode);
+        let outcodes = new Array[6];
+        for (let i = 0; i < 6; i++) {
+            outcodes[i] = outcode[i] == "1" ? true : false;
+        }
+        let outcodeObj = {
+            left: outcodes[0],
+            right: outcodes[1],
+            bottom: outcodes[2],
+            top: outcodes[3],
+            near: outcodes[4],
+            far: outcodes[5],
+        };
     }
 
     //
