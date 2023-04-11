@@ -297,6 +297,10 @@ class Renderer {
                     let vertex2 = transformedVerticies[edges[k + 1]];
                     vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
                     let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, this.scene.view.clip[4]);
+                    if(result == null){ 
+                        continue;
+                    }
+                    result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, this.scene.view.clip[4]);
                     if (result != null) {
                         clippedEdges.push(result);
                     }
@@ -332,49 +336,40 @@ class Renderer {
         if ((rawOutcode0 & rawOutcode1) !== 0) {
             return null;
         }
-
-        if (out0.left) {
-            //left
-            let t = (-p0.x + p0.z) / (delta.x - delta.z);
+        let newx = p0.x;
+        let newy = p0.y;
+        let newz = p0.z;
+        let t = 0;
+        while (t != 0) {
+            t = 0;
+            if (out0.left) {
+                t = (-p0.x + p0.z) / (delta.x - delta.z);
+            }
+            else if (out0.right) {
+                t = (p0.x + p0.z) / (-delta.x - delta.z);
+            }
+            else if (out0.bottom) {
+                t = (-p0.y + p0.z) / (delta.y - delta.z)
+            }
+            else if (out0.top) {
+                t = (p0.y + p0.z) / (-delta.y - delta.z)
+            }
+            else if (out0.near) {
+                t = (p0.z - z_min) / -delta.z
+            }
+            else if (out0.far) {
+                t = (-p0.z - 1) / delta.z
+            }
             let x = p0.x + (t * delta.x);
-            p0.x = x;
-        }
-
-        if (out0.right) {
-            //right
-            let t = (p0.x + p0.z) / (-delta.x - delta.z);
-            let x = p0.x + (t * delta.x);
-            p0.x = x;
-        }
-
-        if (out0.bottom) {
-            //bottom
-            let t = (-p0.y + p0.z) / (delta.y - delta.z)
+            newx = x;
             let y = p0.y + (t * delta.y);
-            p0.y = y;
-        }
-
-        if (out0.top) {
-            //top
-            let t = (p0.y + p0.z) / (-delta.y - delta.z)
-            let y = p0.y + (t * delta.y);
-            p0.y = y;
-        }
-
-        if (out0.near) {
-            //near
-            let t = (p0.z - z_min) / -delta.z
+            newy = y;
             let z = p0.z + (t * delta.z);
-            p0.z = z;
+            newz = z;
         }
-
-        if (out0.far) {
-            //far
-            let t = (-p0.z - 1) / delta.z
-            let z = p0.z + (t * delta.z);
-            p0.z = z;
-        }
-
+        p0.x = newx;
+        p0.y = newy;
+        p0.z = newz;
 
         // TODO: implement clipping here!
         result.pt0 = new Vector4(p0.x, p0.y, p0.z, 1);
@@ -395,7 +390,7 @@ class Renderer {
             top: outcodes[3],
             far: outcodes[4],
             near: outcodes[5],
-            
+
         };
         return outcodeObj;
     }
@@ -514,6 +509,7 @@ class Renderer {
                     model.vertices.push(new Vector4(x + center[0], height / 2 + center[1], z + center[2], 1));
                     model.vertices.push(new Vector4(x + center[0], -height / 2 + center[1], z + center[2], 1));
                     model.edges.push([i, i + 2]);
+                    model.edges.push([(i*2) % (sides * 2), (i*2 + 2) % (sides *2)]);
                     model.edges.push([i * 2, i * 2 + 1]);
                 }
 
@@ -529,7 +525,7 @@ class Renderer {
                     let z = radius * Math.sin(theta);
                     let x = radius * Math.cos(theta);
                     model.vertices.push(new Vector4(x + center[0], -height / 2 + center[1], z + center[2], 1));
-                    //model.edges.push([i, i + 1]);
+                    model.edges.push([(i) % (sides+1), (i + 1) % (sides+1)]);
                     model.edges.push([0, i]);
                 }
 
