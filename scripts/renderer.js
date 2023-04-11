@@ -16,7 +16,7 @@ class Renderer {
         this.canvas.height = canvas.height;
         this.ctx = this.canvas.getContext('2d');
         this.scene = this.processScene(scene);
-        this.enable_animation = false;  // <-- disabled for easier debugging; enable for animation
+        this.enable_animation = true;  // <-- disabled for easier debugging; enable for animation
         this.start_time = null;
         this.prev_time = null;
     }
@@ -47,7 +47,47 @@ class Renderer {
 
     //
     updateTransforms(time, delta_time) {
-        // TODO: update any transformations needed for animation
+        this.scene.models.forEach(model => {
+
+            let xSpeed = 0;
+            let ySpeed = 0;
+            let zSpeed = 0;
+            if (model.animation != null) {
+                if (model.animation.axis === 'x') {
+                    xSpeed = model.animation.rps;
+                }
+                if (model.animation.axis === 'y') {
+                    ySpeed = model.animation.rps;
+                }
+                if (model.animation.axis === 'z') {
+                    zSpeed = model.animation.rps;
+                }
+            }
+            let rotateY = new Matrix(4, 4);
+            mat4x4RotateY(rotateY, ySpeed * (delta_time / 1000));
+            let rotateZ = new Matrix(4, 4);
+            mat4x4RotateZ(rotateZ, zSpeed * (delta_time / 1000));
+            let rotateX = new Matrix(4, 4);
+            mat4x4RotateX(rotateX, xSpeed * (delta_time / 1000));
+            let avg = Vector4(0, 0, 0, 0);
+            let vertexAmt = model.vertices.length;
+            model.vertices.forEach(vertex => {
+                avg = avg.add(vertex);
+            });
+            avg.x = avg.x / vertexAmt;
+            avg.y = avg.y / vertexAmt;
+            avg.z = avg.z / vertexAmt;
+            avg.w = 1;
+            let toOrigin = new Matrix(4, 4);
+            mat4x4Translate(toOrigin, -avg.x, -avg.y, -avg.z);
+            let fromOrigin = new Matrix(4, 4);
+            mat4x4Translate(fromOrigin, avg.x, avg.y, avg.z);
+            for (let i = 0; i < model.vertices.length; i++) {
+                model.vertices[i] = Matrix.multiply([fromOrigin, rotateZ, rotateX, rotateY, toOrigin, model.vertices[i]]);
+                model.vertices[i] = new Vector4(model.vertices[i].x, model.vertices[i].y, model.vertices[i].z, 1);
+            }
+        });
+        this.draw();
     }
 
 
@@ -148,12 +188,10 @@ class Renderer {
 
     //
     draw() {
-        console.log(this.worldToLocal(this.localToWorld((this.worldToLocal(this.scene.view.srp)))))
-
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         //this.drawLine(0, 0, 100, 100);
-        console.log('draw()');
-        console.log(this.scene)
+        //console.log('draw()');
+        //console.log(this.scene)
 
         // TODO: implement drawing here!
         // For each model
@@ -258,17 +296,8 @@ class Renderer {
                     vertex1 = new Vector4(vertex1.x, vertex1.y, vertex1.z, vertex1.w);
                     let vertex2 = transformedVerticies[edges[k + 1]];
                     vertex2 = new Vector4(vertex2.x, vertex2.y, vertex2.z, vertex2.w);
-                    //let result = { pt0: vertex1, pt1: vertex2 };
-                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2}, this.scene.view.clip[4]);
-                    if(result == null){
-                        continue;
-                    }
-                    //transformedVerticies[edges[k]] = result.pt0;
-                    //transformedVerticies[edges[k + 1]] = result.pt1;
-                    //result = this.clipLinePerspective({ pt0: result.pt1, pt1: result.pt0 }, this.scene.view.clip[4]);
-                    //transformedVerticies[edges[k]] = result.pt1;
-                    //transformedVerticies[edges[k + 1]] = result.pt0;
-                    if(result != null){
+                    let result = this.clipLinePerspective({ pt0: vertex1, pt1: vertex2 }, this.scene.view.clip[4]);
+                    if (result != null) {
                         clippedEdges.push(result);
                     }
                 }
@@ -419,8 +448,13 @@ class Renderer {
 
         for (let i = 0; i < scene.models.length; i++) {
             let model = { type: scene.models[i].type };
+            model.vertices = [];
+            model.edges = [];
+            // eslint-disable-next-line no-prototype-builtins
+            if (scene.models[i].hasOwnProperty('animation')) {
+                model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
+            }
             if (model.type === 'generic') {
-                model.vertices = [];
                 model.edges = JSON.parse(JSON.stringify(scene.models[i].edges));
                 for (let j = 0; j < scene.models[i].vertices.length; j++) {
                     model.vertices.push(Vector4(scene.models[i].vertices[j][0],
@@ -432,6 +466,80 @@ class Renderer {
                         model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
                     }
                 }
+            }
+            else if (model.type === 'cube') {
+                const center = scene.models[i].center;
+                const width = scene.models[i].width;
+                const height = scene.models[i].height;
+                const depth = scene.models[i].depth;
+                // Define the eight vertices of the cube
+                let vertices = [
+                    [center[0] - width / 2, center[1] - height / 2, center[2] - depth / 2],
+                    [center[0] + width / 2, center[1] - height / 2, center[2] - depth / 2],
+                    [center[0] + width / 2, center[1] + height / 2, center[2] - depth / 2],
+                    [center[0] - width / 2, center[1] + height / 2, center[2] - depth / 2],
+                    [center[0] - width / 2, center[1] - height / 2, center[2] + depth / 2],
+                    [center[0] + width / 2, center[1] - height / 2, center[2] + depth / 2],
+                    [center[0] + width / 2, center[1] + height / 2, center[2] + depth / 2],
+                    [center[0] - width / 2, center[1] + height / 2, center[2] + depth / 2]
+                ];
+
+                // Add each vertex to the model's vertex list
+                for (let j = 0; j < vertices.length; j++) {
+                    model.vertices.push(Vector4(vertices[j][0], vertices[j][1], vertices[j][2], 1));
+                }
+
+                // Define the edges of the cube
+                let edges = [
+                    [0, 1], [1, 2], [2, 3], [3, 0],
+                    [4, 5], [5, 6], [6, 7], [7, 4],
+                    [0, 4], [1, 5], [2, 6], [3, 7]
+                ];
+
+                // Add each edge to the model's edge list
+                for (let j = 0; j < edges.length; j++) {
+                    model.edges.push(edges[j]);
+                }
+            }
+            else if (model.type === 'cylinder') {
+                const center = scene.models[i].center;
+                const radius = scene.models[i].radius;
+                const height = scene.models[i].height;
+                const sides = scene.models[i].sides;
+                for (let i = 0; i < sides; i++) {
+                    let theta = (i / sides) * 2 * Math.PI;
+                    let z = radius * Math.sin(theta);
+                    let x = radius * Math.cos(theta);
+                    model.vertices.push(new Vector4(x + center[0], height / 2 + center[1], z + center[2], 1));
+                    model.vertices.push(new Vector4(x + center[0], -height / 2 + center[1], z + center[2], 1));
+                    model.edges.push([i, i + 2]);
+                    model.edges.push([i * 2, i * 2 + 1]);
+                }
+
+            }
+            else if (model.type === 'cone') {
+                const center = scene.models[i].center;
+                const radius = scene.models[i].radius;
+                const height = scene.models[i].height;
+                const sides = scene.models[i].sides;
+                model.vertices.push(new Vector4(center[0], height / 2 + center[1], center[2], 1));
+                for (let i = 1; i < sides + 1; i++) {
+                    let theta = (i / sides) * 2 * Math.PI;
+                    let z = radius * Math.sin(theta);
+                    let x = radius * Math.cos(theta);
+                    model.vertices.push(new Vector4(x + center[0], -height / 2 + center[1], z + center[2], 1));
+                    //model.edges.push([i, i + 1]);
+                    model.edges.push([0, i]);
+                }
+
+            } else if (model.type === 'sphere') {
+                model.vertices = [];
+                model.edges = [];
+
+                // Define the parameters for the sphere
+                const radius = scene.models[i].radius;
+                const widthSegments = scene.models[i].slices;
+                const heightSegments = scene.models[i].stacks;
             }
             else {
                 model.center = Vector4(scene.models[i].center[0],
