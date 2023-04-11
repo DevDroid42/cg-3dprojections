@@ -393,8 +393,9 @@ class Renderer {
             right: outcodes[1],
             bottom: outcodes[2],
             top: outcodes[3],
-            near: outcodes[5],
             far: outcodes[4],
+            near: outcodes[5],
+            
         };
         return outcodeObj;
     }
