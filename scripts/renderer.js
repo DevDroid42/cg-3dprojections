@@ -534,16 +534,25 @@ class Renderer {
                 model.edges = [];
 
                 // Define the parameters for the sphere
+                const center = scene.models[i].center;
                 const radius = scene.models[i].radius;
                 const widthSegments = scene.models[i].slices;
                 const heightSegments = scene.models[i].stacks;
-
+                
                 // Define the profile curve for the sphere
                 let circle = (radius, t) => {
                     let x = radius * Math.cos(Math.PI * 2 * t);
                     let y = radius * Math.sin(Math.PI * 2 * t);
                     return [x, y];
                 };
+
+                for (let i = 0; i < heightSegments; i++) {
+                    let position = (i/heightSegments);
+                    let [x, z] = circle(radius, position);
+                    model.vertices.push(new Vector4(x + center.x, position * radius + center.y, z + center.z, 1));
+                    model.edges.push([i, (i+1)%heightSegments]);
+                }
+                
                 //to define a circle define the radius and iterate t from 0 to 1
                 //let [x, y] = curve(radius ,t);
                 

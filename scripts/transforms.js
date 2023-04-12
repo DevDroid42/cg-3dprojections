@@ -28,9 +28,9 @@ function mat4x4Perspective(prp, srp, vup, clip) {
 
     let shearMatrix = new Matrix(4, 4);
     shearMatrix.values = [[1, 0, shearX, 0],
-                     [0, 1, shearY, 0],
-                     [0, 0, 1, 0],
-                     [0, 0, 0, 1]];
+                        [0, 1, shearY, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]];
 
     let sperx = (2 * near) / ((right-left) * far);
     let spery = (2 * near) / ((top-bottom) * far);
